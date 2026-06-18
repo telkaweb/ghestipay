@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/shared/stores/auth.store";
 import {
   ShieldCheck,
   BadgeCheck,
@@ -6,8 +7,15 @@ import {
   Clock3,
   CircleAlert,
 } from "lucide-react";
+import STATUS from "@/shared/constant/Status";
 
 export default function VerificationStatusCard() {
+  const userInfo = useAuthStore((s) => s.user);
+  const user = userInfo[0]; // temporary fix for array response from /me
+
+  const { credit_score_status, digital_signature_status } = STATUS;
+
+  console.log(user);
   return (
     <div
       dir="rtl"
@@ -66,22 +74,47 @@ export default function VerificationStatusCard() {
           <StatusItem
             icon={<ShieldCheck size={20} />}
             title="احراز هویت"
-            status="success"
-            text="تکمیل شده"
+            status={
+              user?.identify_data?.status == "verified" ? "success" : "error"
+            }
+            text={
+              user?.identify_data?.status == "verified"
+                ? "تایید شده"
+                : "تایید نشده"
+            }
           />
 
           <StatusItem
             icon={<BadgeCheck size={20} />}
             title="اعتبارسنجی"
-            status="pending"
-            text="در حال بررسی"
+            status={
+              user?.latest_credit_inquiry == null
+                ? "error"
+                : user?.latest_credit_inquiry?.status == "checked"
+                  ? "success"
+                  : "pending"
+            }
+            text={
+              user?.latest_credit_inquiry == null
+                ? "انجام نشده"
+                : credit_score_status[user?.latest_credit_inquiry?.status] ||
+                  "در انتظار بررسی"
+            }
           />
 
           <StatusItem
             icon={<FileSignature size={20} />}
             title="امضای دیجیتال"
-            status="error"
-            text="انجام نشده"
+            status={user?.latest_digital_signature_request?.status == null ? 'error' :
+              user?.latest_digital_signature_request?.status == "token_issued"
+                ? "success"
+                : "pending"
+            }
+            text={ user?.latest_digital_signature_request?.status == null ? 'صادر نشده' :
+              digital_signature_status[
+                user?.latest_digital_signature_request?.status
+              ] || "در انتظار بررسی"
+            }
           />
         </div>
       </div>

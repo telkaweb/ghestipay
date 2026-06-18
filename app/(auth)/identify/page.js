@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Card from "@/shared/components/ui/Card";
 import Input from "@/shared/components/ui/Input";
@@ -8,6 +8,8 @@ import Button from "@/shared/components/ui/Button";
 import Background from "@/shared/components/ui/Background";
 import Loading from "@/shared/components/ui/Loading";
 import { useAuth } from "@/shared/hooks/useAuth";
+import { useAuthStore } from "@/shared/stores/auth.store";
+import { useRouter } from "next/navigation";
 
 export default function VerifyIdentityPage() {
   const { identify } = useAuth();
@@ -16,6 +18,16 @@ export default function VerifyIdentityPage() {
   const [birthDate, setBirthDate] = useState("");
   const [error, setError] = useState("");
   const loading = identify.isPending;
+  const router = useRouter();
+
+  const user = useAuthStore(s =>  s.user);
+
+  useEffect(() => {
+    console.log(user)
+    if(user[0]?.identify_data.status == 'verified') {
+      router.replace('/user/dashboard')
+    }
+  }, [user]);
 
   const normalizeBirthDate = (value) => value.replace(/\D/g, "");
 
