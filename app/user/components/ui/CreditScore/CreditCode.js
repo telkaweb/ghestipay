@@ -81,7 +81,7 @@ export default function CreditCode({
             disabled={submitting || !code}
             onClick={handleSubmit}
           >
-            {submitting ? "در حال ثبت..." : "ثبت کد"}
+            {submitting ? "در حال ثبت..." : "تایید"}
           </Button>
         </div>
       </div>
