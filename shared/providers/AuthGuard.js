@@ -7,10 +7,12 @@ import Loading from "../components/ui/Loading";
 import { authService } from "@/shared/services/auth.service";
 
 const USER_REFRESH_INTERVAL = 2 * 60 * 1000;
+const PUBLIC_PATHS = ["/user/requests/new"];
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isPublicPath = PUBLIC_PATHS.includes(pathname);
 
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
@@ -61,6 +63,7 @@ export default function AuthGuard({ children }) {
   // Fetch user once after refresh/mount, then refresh it every 2 minutes.
   useEffect(() => {
     if (!hydrated || !token) return;
+    if (isPublicPath) return;
 
     fetchMe({ showLoading: !user });
 
@@ -70,7 +73,7 @@ export default function AuthGuard({ children }) {
 
     return () => clearInterval(intervalId);
     // Do not depend on `user`; updateUser changes it and would recreate the interval.
-  }, [hydrated, token, fetchMe]);
+  }, [hydrated, token, fetchMe, isPublicPath]);
 
   // Decide redirects only after hydration and any required /me check finished
   useEffect(() => {
@@ -81,7 +84,7 @@ export default function AuthGuard({ children }) {
     const isDashboard = pathname.startsWith("/user") || pathname.startsWith("/shop");
 
     // If not logged in but trying to access dashboard -> go to login
-    if (!token && isDashboard) {
+    if (!token && isDashboard && !isPublicPath) {
       setIsRedirecting(true);
       router.replace("/");
       return;
