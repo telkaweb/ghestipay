@@ -5,9 +5,10 @@ export function middleware(req) {
   const authPath = ['/', '/login', '/otp']
 
   const { pathname } = req.nextUrl;
+  const isPublicStoreOrderPath = pathname === "/user/requests/new";
 
   // اگر نداشت توکن و رفت داخل داشبورد
-  if (!token && pathname.startsWith("/user")) {
+  if (!token && pathname.startsWith("/user") && !isPublicStoreOrderPath) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
