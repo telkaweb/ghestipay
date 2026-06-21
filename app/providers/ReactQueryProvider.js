@@ -10,15 +10,14 @@ export default function ReactQueryProvider({ children }) {
         defaultOptions: {
           queries: {
             retry: 1,
-            refetchOnWindowFocus: false,
+            refetchOnWindowFocus: true, // مهم
+            refetchOnMount: "always", // خیلی مهم
+            staleTime: 0,
+            gcTime: 0,
           },
         },
-      })
+      }),
   );
 
-  return (
-    <QueryClientProvider client={client}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
