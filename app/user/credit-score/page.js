@@ -75,13 +75,15 @@ const Page = () => {
   const {
     getLatestCreditScore,
     createCreditScore,
+    resetCreditScoreRequests,
     getCreditScoreDetails,
     sendVerificationCode,
-    storeVerificationCode,
+    verifyCode,
     generateCreditScoreResult,
   } = useCredit();
   const creditRequest = useCreditStore((s) => s.creditRequest);
   const payment = useCreditStore((s) => s.payment);
+  const clearCreditRequest = useCreditStore((s) => s.clearCreditRequest);
 
   const currentStep = resultOnly ? 4 : normalizeStep(searchParams.get("step"));
   const creditInquiryId = useMemo(() => {
@@ -116,6 +118,7 @@ const Page = () => {
       onSettled: () => setCheckedLatest(true),
     });
   }, []);
+  
 
   useEffect(() => {
     if (!checkedLatest || resultOnly) return;
@@ -137,6 +140,17 @@ const Page = () => {
 
     return () => clearInterval(intervalId);
   }, [checkedLatest, resultOnly, currentStep, paymentStarted, creditInquiryId]);
+
+  const handleStartNewCreditScore = () => {
+    resetCreditScoreRequests.mutate(undefined, {
+      onSuccess: () => {
+        clearCreditRequest();
+        setResultOnly(false);
+        setPaymentStarted(false);
+        router.replace("/user/credit-score?step=1");
+      },
+    });
+  };
 
   const handleCreateCreditScore = () => {
     createCreditScore.mutate(undefined, {
@@ -161,7 +175,7 @@ const Page = () => {
   const handleRequestCode = () => {
     if (!creditInquiryId) return;
 
-    sendVerificationCode.mutate(creditInquiryId);
+    sendVerificationCode.mutate();
   };
 
   const handleSubmitCode = (code) => {
@@ -170,7 +184,7 @@ const Page = () => {
       return;
     }
 
-    storeVerificationCode.mutate(
+    verifyCode.mutate(
       { creditInquiryId, code },
       {
         onSuccess: () => {
@@ -189,6 +203,10 @@ const Page = () => {
           status="ready"
           score={creditRequest?.grade || creditRequest?.score || undefined}
           reportDate={creditRequest?.checked_at || "امروز"}
+          onStartNew={handleStartNewCreditScore}
+          startingNew={resetCreditScoreRequests.isPending}
+          riskTitle={creditRequest?.risk_title}
+          checksSummaryValue={creditRequest?.checks_summary?.value}
         />
       );
     }
@@ -220,7 +238,7 @@ const Page = () => {
             onRequestCode={handleRequestCode}
             onSubmitCode={handleSubmitCode}
             requesting={sendVerificationCode.isPending}
-            submitting={storeVerificationCode.isPending || generateCreditScoreResult.isPending}
+            submitting={verifyCode.isPending || generateCreditScoreResult.isPending}
           />
         );
 
@@ -230,6 +248,10 @@ const Page = () => {
             status={creditRequest?.grade || creditRequest?.score ? "ready" : "pending"}
             score={creditRequest?.grade || creditRequest?.score || undefined}
             reportDate={creditRequest?.checked_at || "امروز"}
+            onStartNew={handleStartNewCreditScore}
+            startingNew={resetCreditScoreRequests.isPending}
+            riskTitle={creditRequest?.risk_title}
+            checksSummaryValue={creditRequest?.checks_summary?.value}
           />
         );
 
@@ -251,3 +273,8 @@ const Page = () => {
 };
 
 export default Page;
+
+
+
+
+
