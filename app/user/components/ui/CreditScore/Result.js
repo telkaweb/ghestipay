@@ -1,5 +1,20 @@
-﻿import { CheckCircle2, Clock, FileText, ShieldCheck, TrendingUp } from "lucide-react";
+﻿import { AlertTriangle, CheckCircle2, Clock, FileText, ShieldCheck, TrendingUp } from "lucide-react";
+import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
+
+function formatJalaliDate(value) {
+  if (!value) return "امروز";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
 
 const gradeConfig = {
   A: {
@@ -22,7 +37,7 @@ const gradeConfig = {
     description: "برای دریافت اعتبار بهتر است وضعیت مالی و سوابق بازپرداخت خود را بهبود دهید.",
     className: "bg-red-50 text-red-600",
   },
-  E : {
+  E: {
     label: "ضعیف",
     description: "برای دریافت اعتبار بهتر است وضعیت مالی و سوابق بازپرداخت خود را بهبود دهید.",
     className: "bg-red-50 text-red-600",
@@ -34,9 +49,14 @@ export default function CreditScoreResult({
   score = "A",
   limit = "۱۲۰٬۰۰۰٬۰۰۰ تومان",
   reportDate = "امروز",
+  onStartNew,
+  startingNew = false,
+  riskTitle,
+  checksSummaryValue,
 }) {
   const isReady = status === "ready";
   const grade = gradeConfig[score] || gradeConfig.A;
+  const formattedReportDate = formatJalaliDate(reportDate);
 
   if (!isReady) {
     return (
@@ -73,7 +93,7 @@ export default function CreditScoreResult({
       <div className={`rounded-3xl p-5 text-center ${grade.className}`}>
         <p className="text-xs font-medium opacity-80">رتبه اعتباری</p>
         <p className="mt-2 text-5xl font-black leading-none">{score}</p>
-        <p className="mt-2 text-sm font-bold">{grade.label}</p>
+        <p className="mt-2 text-sm font-bold">{riskTitle || grade.label}</p>
       </div>
 
       <p className="rounded-2xl bg-gray-50 p-4 text-sm leading-7 text-gray-600">
@@ -97,14 +117,43 @@ export default function CreditScoreResult({
           <span className="text-sm font-bold text-emerald-600">تایید شده</span>
         </div>
 
+        {checksSummaryValue && (
+          <div className="flex items-center justify-between rounded-2xl border border-gray-100 p-3">
+            <span className="flex items-center gap-2 text-sm text-gray-500">
+              <ShieldCheck size={18} className="text-blue-600" />
+              وضعیت چک
+            </span>
+            <span className="text-sm font-bold text-gray-900">{checksSummaryValue}</span>
+          </div>
+        )}
+
         <div className="flex items-center justify-between rounded-2xl border border-gray-100 p-3">
           <span className="flex items-center gap-2 text-sm text-gray-500">
             <FileText size={18} className="text-gray-500" />
             تاریخ گزارش
           </span>
-          <span className="text-sm font-bold text-gray-900">{reportDate}</span>
+          <span className="text-sm font-bold text-gray-900">{formattedReportDate}</span>
         </div>
       </div>
+
+      <div className="rounded-2xl bg-amber-50 p-4 text-amber-700">
+        <div className="flex items-start gap-2">
+          <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+          <p className="text-xs leading-6">
+            اگر گزینه اعتبارسنجی جدید را انتخاب کنید، نتایج قبلی از این صفحه پاک می‌شود و باید هزینه اعتبارسنجی را دوباره از ابتدا پرداخت کنید.
+          </p>
+        </div>
+      </div>
+
+      <Button className="cursor-pointer" variant="secondary" disabled={startingNew} onClick={onStartNew}>
+        {startingNew ? "در حال پاک کردن نتایج قبلی..." : "اعتبارسنجی جدید"}
+      </Button>
     </Card>
   );
 }
+
+
+
+
+
+
