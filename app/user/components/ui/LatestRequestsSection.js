@@ -26,7 +26,7 @@ export default function LatestRequestsSection() {
       data.push({
         id: request.id,
         date: new Date(request.created_at).toLocaleDateString("fa-IR"),
-        installmentsTotal: `${Number(request?.amounts?.installment_total).toLocaleString("fa-IR")} تومان`,
+        installmentsTotal: `${Number(request?.invoice_amount).toLocaleString("fa-IR")} تومان`,
         status:
           request.status === "rejected"
             ? "رد شده"
@@ -34,7 +34,7 @@ export default function LatestRequestsSection() {
               ? "تایید شده"
               : "در حال بررسی",
         itemsCount:
-          Number(request.invoice.items.length).toLocaleString("fa-IR") || 0,
+          Number(request?.invoice?.items.length).toLocaleString("fa-IR") || 0,
       });
     });
     setList(data);

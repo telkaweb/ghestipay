@@ -37,7 +37,7 @@ export default function RequestsPage() {
       id: request.id,
       date: new Date(request.created_at).toLocaleDateString("fa-IR"),
       installmentsTotal: `${Number(
-        request?.amounts?.installment_total ?? 0
+        request?.invoice_amount ?? 0
       ).toLocaleString("fa-IR")} تومان`,
       status:
         request.status === "rejected"

@@ -3,7 +3,7 @@ import client from "../api/client";
 export const installmentService = {
   async storeOrder({ phone, invoice_id }) {
     const res = await client.post(
-      "/api/installments/store-orders",
+      "/api/installments/v2/purchase-requests",
       {
         phone,
         invoice_id,
@@ -25,6 +25,9 @@ export const installmentService = {
   },
 
   async getOrderList(options) {
-    return client.get("/api/installments/requests", options);
+    return client.get("/api/installments/v2/requests", options);
+  },
+  async getOrderDetails(orderId) {
+    return client.get(`/api/installments/requests/${orderId}`); 
   }
 };

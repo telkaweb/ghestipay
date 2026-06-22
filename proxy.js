@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
+export function proxy(req) {
   const token = req.cookies.get("token")?.value;
-  const authPath = ['/', '/login', '/otp']
+  const authPath = ["/", "/login", "/otp"];
 
   const { pathname } = req.nextUrl;
   const isPublicStoreOrderPath = pathname === "/user/requests/new";
 
-  // اگر نداشت توکن و رفت داخل داشبورد
   if (!token && pathname.startsWith("/user") && !isPublicStoreOrderPath) {
     return NextResponse.redirect(new URL("/", req.url));
   }
@@ -16,8 +15,7 @@ export function middleware(req) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // اگر لاگین بود ولی رفت / → بفرست به داشبورد
-  if (token && authPath.includes(pathname) ) {
+  if (token && authPath.includes(pathname)) {
     return NextResponse.redirect(new URL("/user/dashboard", req.url));
   }
 
@@ -25,5 +23,5 @@ export function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/user/:path*", "/shop/:path*", "/"],
+  matcher: ["/user/:path*", "/shop/:path*", "/", "/otp"],
 };

@@ -24,3 +24,12 @@ export function useGetOrderList(options) {
     queryFn: () => installmentService.getOrderList(options),
   });
 }
+
+export function useGetOrderDetails(orderId, options = {}) {
+  return useQuery({
+    queryKey: ["getOrderDetails", orderId],
+    queryFn: () => installmentService.getOrderDetails(orderId),
+    enabled: Boolean(orderId),
+    ...options,
+  });
+}
