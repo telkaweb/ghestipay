@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import RequestCard from "./RequestCard";
-import { useInstallment } from "@/shared/hooks/useInstallment";
 import { useEffect, useState } from "react";
 import CardSkeletonLoading from "@/shared/components/ui/CardSkeletonLoading";
 import {useGetOrderList} from "@/shared/hooks/useInstallment";
@@ -57,7 +56,7 @@ export default function LatestRequestsSection() {
 
       <div className="flex flex-col gap-3">
         {list.map((request, index) => (
-          <RequestCard key={request.tracking_code + index} request={request} />
+          <RequestCard key={index} request={request} />
         ))}
       </div>
     </section>

@@ -35,7 +35,7 @@ export default function RequestsPage() {
   console.log("requests", requests);
 
   const list = useMemo(() => {
-    
+
     return requests.map((request) => ({
       id: request.tracking_code,
       date: new Date(request.created_at).toLocaleDateString("fa-IR"),
@@ -134,7 +134,7 @@ export default function RequestsPage() {
         <div className="flex flex-col gap-3">
           {filteredRequests.map((request, index) => (
             <RequestCard
-              key={request.tracking_code+index}
+              key={index}
               request={request}
               returnQuery={returnQuery}
             />
