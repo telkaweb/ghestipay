@@ -20,12 +20,14 @@ export default function VerifyIdentityPage() {
   const loading = identify.isPending;
   const router = useRouter();
 
-  const user = useAuthStore(s =>  s.user);
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    console.log(user)
-    if(user[0]?.identify_data?.status == 'verified') {
-      router.replace('/user/dashboard')
+    if (user?.kyc_status == "verified") {
+      router.replace("/user/dashboard");
+    }
+    if (user === null) {
+      router.replace("/otp");
     }
   }, [user]);
 
@@ -35,7 +37,7 @@ export default function VerifyIdentityPage() {
     setError("");
 
     const national = nationalCode.trim();
-    const birth = normalizeBirthDate(birthDate);
+    const birth = birthDate;
 
     if (!national) {
       setError("کد ملی الزامی است");
@@ -52,8 +54,8 @@ export default function VerifyIdentityPage() {
       return;
     }
 
-    if (!/^\d{8}$/.test(birth)) {
-      setError("فرمت تاریخ تولد باید 8 رقم باشد. می‌توانید به صورت 1371/10/05 یا 13711005 وارد کنید");
+    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(birth)) {
+      setError("فرمت تاریخ تولد باید به صورت 1375/10/05 باشد");
       return;
     }
 
@@ -64,19 +66,19 @@ export default function VerifyIdentityPage() {
       },
       {
         onError: (err) => {
-          setError(err?.response?.data?.message || err.message || "خطا در احراز هویت");
+          setError(
+            err?.response?.data?.message || err.message || "خطا در احراز هویت",
+          );
         },
-      }
+      },
     );
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50">
-
       <Background />
 
       <Card className="relative z-10 w-full max-w-md mx-4 p-6">
-
         <div className="text-center mb-8">
           <div
             className="
@@ -90,9 +92,7 @@ export default function VerifyIdentityPage() {
             🪪
           </div>
 
-          <h1 className="text-lg font-bold">
-            احراز هویت
-          </h1>
+          <h1 className="text-lg font-bold">احراز هویت</h1>
 
           <p className="text-sm text-slate-500 mt-2">
             برای استفاده از خدمات، اطلاعات هویتی خود را تکمیل کنید

@@ -20,10 +20,10 @@ export function useAuth() {
       authService.verify({ phone, code }),
 
     onSuccess: (res) => {
-      const data = res.data.data[0];
+      const data = res.data.data;
 
       const user = data.user;
-      const token = data.token;
+      const token = data.access_token;
 
       // save globally
       setAuth({ user, token });

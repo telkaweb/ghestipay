@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
@@ -21,11 +20,10 @@ const phoneValidationSchema = Yup.object().shape({
 const codeValidationSchema = Yup.object().shape({
   code: Yup.string()
     .required("کد تایید الزامی است")
-    .matches(/^\d{6}$/, "کد باید 6 رقم باشد"),
+    .matches(/^\d{5}$/, "کد باید 5 رقم باشد"),
 });
 
 export default function OtpPage() {
-  const router = useRouter();
   const { login, verify } = useAuth();
 
   const [step, setStep] = useState(1);
@@ -179,7 +177,7 @@ export default function OtpPage() {
 
             <Input
               type="text"
-              placeholder="کد 6 رقمی"
+              placeholder="کد 5 رقمی"
               {...codeFormik.getFieldProps("code")}
               error={
                 codeFormik.touched.code && codeFormik.errors.code
@@ -189,14 +187,14 @@ export default function OtpPage() {
             />
 
             {/* TIMER */}
-            <div className="text-xs text-gray-500 px-[10px]">
+            <div className="text-xs text-gray-500 px-2.5">
               {timer > 0 ? (
                 <>ارسال مجدد تا {formatTime(timer)}</>
               ) : (
                 <button
                   type="button"
                   onClick={handleResendOtp}
-                  className="text-blue-600 px-[10px] hover:underline"
+                  className="text-blue-600 px-2.5 hover:underline"
                   disabled={login.isPending}
                 >
                   {login.isPending ? "درحال ارسال..." : "ارسال مجدد کد"}

@@ -23,6 +23,7 @@ export default function AuthGuard({ children }) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const isFetchingUserRef = useRef(false);
 
+
   useEffect(() => {
     if (hydrated) return;
 
@@ -45,7 +46,6 @@ export default function AuthGuard({ children }) {
     try {
       const res = await authService.me();
       const userData = res?.data?.data || res?.data;
-
       if (userData) {
         updateUser(userData);
       }
@@ -93,7 +93,7 @@ export default function AuthGuard({ children }) {
     // If logged in and on auth page -> route to identify or dashboard
     if (token && isAuthPage) {
       setIsRedirecting(true);
-      if (user?.identify_data?.status !== "verified") {
+      if (user?.kyc_status !== "verified") {
         router.replace("/identify");
       } else {
         router.replace("/user/dashboard");

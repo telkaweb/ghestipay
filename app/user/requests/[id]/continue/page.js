@@ -43,8 +43,6 @@ export default function ContinueRequestPage() {
   const storedOrderDetails = useInstallmentStore((s) => s.orderDetails);
   const setOrderDetails = useInstallmentStore((s) => s.setOrderDetails);
 
-  console.log('stored order detail',storedOrderDetails?.status)
-
   // The first page action is loading the latest request details from the API.
   const {
     data: orderDetailsResponse,

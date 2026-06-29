@@ -6,16 +6,16 @@ import {
   CircleCheckBig,
   Clock3,
   CircleAlert,
+  User,
+  Phone,
 } from "lucide-react";
 import STATUS from "@/shared/constant/Status";
 
 export default function VerificationStatusCard() {
-  const userInfo = useAuthStore((s) => s.user);
-  const user = userInfo[0]; // temporary fix for array response from /me
+  const user = useAuthStore((s) => s.user); // temporary fix for array response from /me
 
-  const { credit_score_status, digital_signature_status } = STATUS;
+  // const { credit_score_status, digital_signature_status } = STATUS;
 
-  console.log(user);
   return (
     <div
       dir="rtl"
@@ -75,46 +75,27 @@ export default function VerificationStatusCard() {
             icon={<ShieldCheck size={20} />}
             title="احراز هویت"
             status={
-              user?.identify_data?.status == "verified" ? "success" : "error"
+              user?.kyc_status == "verified" ? "success" : "error"
             }
             text={
-              user?.identify_data?.status == "verified"
+              user?.kyc_status == "verified"
                 ? "تایید شده"
                 : "تایید نشده"
             }
           />
 
           <StatusItem
-            icon={<BadgeCheck size={20} />}
-            title="اعتبارسنجی"
-            status={
-              user?.latest_credit_inquiry == null
-                ? "error"
-                : user?.latest_credit_inquiry?.status == "checked"
-                  ? "success"
-                  : "pending"
-            }
-            text={
-              user?.latest_credit_inquiry == null
-                ? "انجام نشده"
-                : credit_score_status[user?.latest_credit_inquiry?.status] ||
-                  "در انتظار بررسی"
-            }
+            icon={<User size={20} />}
+            title="نام و نام‌خانوادگی"
+            status={user?.name ? 'success' : 'error'}
+            text={user?.name ? `${user?.name} ${user?.family}` : ''}
           />
 
           <StatusItem
-            icon={<FileSignature size={20} />}
-            title="امضای دیجیتال"
-            status={user?.latest_digital_signature_request?.status == null ? 'error' :
-              user?.latest_digital_signature_request?.status == "token_issued"
-                ? "success"
-                : "pending"
-            }
-            text={ user?.latest_digital_signature_request?.status == null ? 'صادر نشده' :
-              digital_signature_status[
-                user?.latest_digital_signature_request?.status
-              ] || "در انتظار بررسی"
-            }
+            icon={<Phone size={20} />}
+            title="شماره تلفن"
+            status={user?.mobile ? 'success' : 'error'}
+            text={user?.mobile ? user.mobile : ''}
           />
         </div>
       </div>
