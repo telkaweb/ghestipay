@@ -29,6 +29,6 @@ export const installmentService = {
     return client.get("/v1/installment-requests", options);
   },
   async getOrderDetails(orderId) {
-    return client.get(`/api/installments/requests/${orderId}`); 
+    return client.get(`/v1/installment-requests/${orderId}`); 
   }
 };

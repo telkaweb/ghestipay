@@ -27,17 +27,20 @@ export default function RequestsPage() {
     sort: "desc",
   });
 
-  const requests = getOrderList.data?.data?.data ?? [];
+  const requests = getOrderList.data?.data?.data?.data ?? [];
 
   const totalPages = getOrderList.data?.data?.last_page ?? 1;
   const currentPage = getOrderList.data?.data?.current_page ?? 1;
 
+  console.log("requests", requests);
+
   const list = useMemo(() => {
+    
     return requests.map((request) => ({
-      id: request.id,
+      id: request.tracking_code,
       date: new Date(request.created_at).toLocaleDateString("fa-IR"),
       installmentsTotal: `${Number(
-        request?.invoice_amount ?? 0
+        request?.amounts?.invoice_amount ?? 0
       ).toLocaleString("fa-IR")} تومان`,
       status:
         request.status === "rejected"
@@ -45,7 +48,7 @@ export default function RequestsPage() {
           : request.status === "approved"
           ? "تایید شده"
           : "در حال بررسی",
-      itemsCount: Number(request?.invoice?.items?.length).toLocaleString("fa-IR") ?? 0,
+      itemsCount: Number(request?.items?.length).toLocaleString("fa-IR") ?? 0,
     }));
   }, [requests]);
 
@@ -129,9 +132,9 @@ export default function RequestsPage() {
 
       {filteredRequests.length > 0 ? (
         <div className="flex flex-col gap-3">
-          {filteredRequests.map((request) => (
+          {filteredRequests.map((request, index) => (
             <RequestCard
-              key={request.id}
+              key={request.tracking_code+index}
               request={request}
               returnQuery={returnQuery}
             />

@@ -21,10 +21,11 @@ export default function LatestRequestsSection() {
   useEffect(() => {
     let data = [];
     latestRequests?.forEach((request) => {
+      console.log("request", request);
       data.push({
-        id: request.id,
+        id: request.tracking_code,
         date: new Date(request.created_at).toLocaleDateString("fa-IR"),
-        installmentsTotal: `${Number(request?.invoice_amount).toLocaleString("fa-IR")} تومان`,
+        installmentsTotal: `${Number(request?.amounts?.invoice_amount).toLocaleString("fa-IR")} تومان`,
         status:
           request.status === "rejected"
             ? "رد شده"
@@ -32,7 +33,7 @@ export default function LatestRequestsSection() {
               ? "تایید شده"
               : "در حال بررسی",
         itemsCount:
-          Number(request?.invoice?.items.length).toLocaleString("fa-IR") || 0,
+          Number(request?.items?.length).toLocaleString("fa-IR") || 0,
       });
     });
     setList(data);
@@ -55,8 +56,8 @@ export default function LatestRequestsSection() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {list.map((request) => (
-          <RequestCard key={request.id} request={request} />
+        {list.map((request, index) => (
+          <RequestCard key={request.tracking_code + index} request={request} />
         ))}
       </div>
     </section>
