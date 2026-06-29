@@ -23,7 +23,7 @@ export default function AppHeader() {
           خوش آمدید
         </span>
         <span className="text-sm font-medium text-gray-800">
-          {user[0]?.name}
+          {`${user?.name || ""} ${user?.family || ""}`}
         </span>
       </div>
 
