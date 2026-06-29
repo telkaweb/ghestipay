@@ -24,11 +24,15 @@ export const useAuthStore = create((set) => ({
   hydrate: () => {
     const token = Cookies.get("token");
     const userStr = Cookies.get("user");
-    
-    if (token) {
-      set({ token });
+
+    if (!token) {
+      Cookies.remove("user");
+      set({ user: null, token: null, hydrated: true });
+      return;
     }
-    
+
+    set({ token });
+
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -42,7 +46,8 @@ export const useAuthStore = create((set) => ({
     set({ hydrated: true });
   },
   logout: () => {
-    set({ user: null, token: null });
+    set({ user: null, token: null, hydrated: true });
     Cookies.remove("token");
+    Cookies.remove("user");
   },
 }));

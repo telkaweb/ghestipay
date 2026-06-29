@@ -22,4 +22,8 @@ export const authService = {
   me() {
     return client.get("/v1/auth/me");
   },
+
+  logout() {
+    return client.post("/v1/auth/logout", null, { skipAuthRedirect: true });
+  }
 };

@@ -17,11 +17,8 @@ export default function UserLayout({ children }) {
     if (isPublicPath) return;
     if (!user) return;
 
-    if (user.role === "sotre") {
+    if (user.role === "shop") {
       router.replace("/shop/dashboard");
-    }
-    if (user.role === "customer") {
-      router.replace("/user/dashboard");
     }
   }, [isPublicPath, router, user]);
 

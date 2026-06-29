@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useAuthStore } from "../stores/auth.store";
 
 const client = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -22,7 +23,7 @@ client.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && !err.config?.skipAuthRedirect) {
-      Cookies.remove("token");
+      useAuthStore.getState().logout();
       window.location.href = "/";
     }
 

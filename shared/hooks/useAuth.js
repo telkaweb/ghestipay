@@ -8,6 +8,7 @@ export function useAuth() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const updateUser = useAuthStore((s) => s.updateUser);
+  const clearAuth = useAuthStore((s) => s.logout);
 
   // STEP 1: SEND OTP
   const login = useMutation({
@@ -52,9 +53,18 @@ export function useAuth() {
     },
   });
 
+  const logout = useMutation({
+    mutationFn: () => authService.logout(),
+    onSettled: () => {
+      clearAuth();
+      router.replace("/");
+    },
+  });
+
   return {
     login,
     verify,
     identify,
+    logout,
   };
 }
