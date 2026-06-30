@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { Bell, WalletCards } from "lucide-react";
 import { useAuthStore } from "@/shared/stores/auth.store";
 
 export default function AppHeader() {
@@ -27,30 +27,49 @@ export default function AppHeader() {
         </span>
       </div>
 
-      {/* Notification Link */}
-      <Link
-        href="/notifications"
-        className="
-          relative
-          w-9 h-9
-          flex items-center justify-center
-          rounded-full
-          bg-white/40
-          backdrop-blur-md
-          border border-white/30
-          active:scale-95 transition
-        "
-      >
-        <Bell size={18} className="text-gray-700" />
+      <div className="flex items-center gap-2">
+        <Link
+          href="/user/wallet"
+          aria-label="کیف پول"
+          className="
+            relative
+            w-9 h-9
+            flex items-center justify-center
+            rounded-full
+            bg-white/40
+            backdrop-blur-md
+            border border-white/30
+            active:scale-95 transition
+          "
+        >
+          <WalletCards size={18} className="text-gray-700" />
+        </Link>
 
-        {/* Badge */}
-        <span className="
-          absolute top-2 right-2
-          w-2 h-2
-          bg-red-500
-          rounded-full
-        " />
-      </Link>
+        <Link
+          href="/user/notifications"
+          aria-label="اعلان‌ها"
+          className="
+            relative
+            w-9 h-9
+            flex items-center justify-center
+            rounded-full
+            bg-white/40
+            backdrop-blur-md
+            border border-white/30
+            active:scale-95 transition
+          "
+        >
+          <Bell size={18} className="text-gray-700" />
+
+          {/* Badge */}
+          <span className="
+            absolute top-2 right-2
+            w-2 h-2
+            bg-red-500
+            rounded-full
+          " />
+        </Link>
+      </div>
 
     </header>
   );
