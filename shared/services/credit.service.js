@@ -43,6 +43,6 @@ export const creditService = {
     });
   },
   creditScoreResult(trackingId) {
-    return client.post(`https://platform.idehpardazan.co/api/v1/installment-requests/${trackingId}/credit-score/result`);
+    return client.post(`/v1/installment-requests/${trackingId}/credit-score/result`);
   }
 };

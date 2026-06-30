@@ -73,6 +73,9 @@ export default function ContinueRequestPage() {
     orderDetails?.tracking_id ||
     orderDetails?.tracking_code ||
     orderId;
+  const shouldShowCreditScoreResult =
+    fetchedOrderDetails?.current_step === "rules" ||
+    fetchedOrderDetails?.request_status === "credit_score_result_pending";
   const currentStep = 1;
   const isLastStep = currentStep === 6;
 
@@ -83,17 +86,21 @@ export default function ContinueRequestPage() {
     setOrderDetails(fetchedOrderDetails);
   }, [fetchedOrderDetails, setOrderDetails]);
 
-  const startCreditScore = useCallback(({ force = false } = {}) => {
-    if (!trackingId) return;
-    if (!force && startedCreditScoreTrackingRef.current === trackingId) return;
+  const startCreditScore = useCallback(
+    ({ force = false } = {}) => {
+      if (!trackingId) return;
+      if (!force && startedCreditScoreTrackingRef.current === trackingId)
+        return;
 
-    startedCreditScoreTrackingRef.current = trackingId;
-    startCreditScoreResultGeneration(trackingId, {
-      onSuccess: (res) => {
-        setCreditScoreStartData(res?.data?.data || res?.data || null);
-      },
-    });
-  }, [trackingId, startCreditScoreResultGeneration]);
+      startedCreditScoreTrackingRef.current = trackingId;
+      startCreditScoreResultGeneration(trackingId, {
+        onSuccess: (res) => {
+          setCreditScoreStartData(res?.data?.data || res?.data || null);
+        },
+      });
+    },
+    [trackingId, startCreditScoreResultGeneration],
+  );
 
   useEffect(() => {
     if (step !== 2) return;
@@ -102,27 +109,30 @@ export default function ContinueRequestPage() {
   }, [step, startCreditScore]);
 
   useEffect(() => {
-    if (step !== 2) return;
     if (!trackingId) return;
-    if (fetchedOrderDetails?.request_status !== "credit_score_result_pending") return;
+    if (!shouldShowCreditScoreResult) return;
     if (fetchedCreditScoreResultRef.current === trackingId) return;
 
     fetchedCreditScoreResultRef.current = trackingId;
     creditScoreResult(trackingId, {
       onSuccess: (res) => {
-        setCreditScoreResultData(res?.data?.data || res?.data || null);
+        setCreditScoreResultData(
+          res?.data?.data?.report || res?.data?.report || null,
+        );
         refetchOrderDetails();
+      },
+      onError: () => {
+        fetchedCreditScoreResultRef.current = null;
       },
     });
   }, [
-    step,
     trackingId,
-    fetchedOrderDetails?.request_status,
+    shouldShowCreditScoreResult,
     creditScoreResult,
     refetchOrderDetails,
   ]);
 
-console.log('start credit data', creditScoreStartData)
+  console.log("start credit data", creditScoreStartData);
 
   // Last step returns the user to the request details page instead of advancing.
   const handleNext = () => {
@@ -166,28 +176,28 @@ console.log('start credit data', creditScoreStartData)
             return <Loading message="در حال آماده‌سازی پرداخت..." />;
           }
 
-          if(fetchedOrderDetails.request_status == 'credit_score_result_pending') {
+          if (shouldShowCreditScoreResult) {
             return (
               <CreditScoreResult
                 status={creditScoreResultData ? "ready" : "pending"}
-                score={
-                  creditScoreResultData?.grade ||
-                  creditScoreResultData?.score ||
-                  undefined
-                }
+                score={creditScoreResultData?.credit_score?.risk_grade}
                 reportDate={
                   creditScoreResultData?.checked_at ||
                   creditScoreResultData?.created_at ||
                   undefined
                 }
-                riskTitle={creditScoreResultData?.risk_title}
-                checksSummaryValue={creditScoreResultData?.checks_summary?.value}
+                riskTitle={creditScoreResultData?.final_analysis?.risk_level}
+                checksSummaryValue={creditScoreResultData?.checks?.summary}
                 startingNew={isCreditScoreResultPending}
+                loanSummary={creditScoreResultData?.facilities?.received}
+                loanGuarantedSummary={
+                  creditScoreResultData?.facilities?.guaranteed
+                }
               />
             );
           }
 
-          if(creditScoreStartData.request_status === 'credit_score_otp_sent'){
+          if (creditScoreStartData.request_status === "credit_score_otp_sent") {
             return (
               <CreditCode
                 canResendAfter={
@@ -216,12 +226,26 @@ console.log('start credit data', creditScoreStartData)
               onContinue={() => {}}
               trackingId={trackingId}
               creditScoreStartData={creditScoreStartData}
-
             />
           );
         }
-      // case 2:
-      //   return <RequiredMents orderDetails={orderDetails} />;
+      case "rules":
+        return (
+          <CreditScoreResult
+            status={creditScoreResultData ? "ready" : "pending"}
+            score={creditScoreResultData?.credit_score?.risk_grade}
+            reportDate={
+              creditScoreResultData?.checked_at ||
+              creditScoreResultData?.created_at ||
+              undefined
+            }
+            riskTitle={creditScoreResultData?.final_analysis?.risk_level}
+            checksSummaryValue={creditScoreResultData?.checks?.summary}
+            startingNew={isCreditScoreResultPending}
+            loanSummary={creditScoreResultData?.facilities?.received}
+            loanGuarantedSummary={creditScoreResultData?.facilities?.guaranteed}
+          />
+        );
 
       // case 3:
       //   return <PaymentInfo orderDetails={orderDetails} showConfirmButton={false} />;
@@ -278,15 +302,17 @@ console.log('start credit data', creditScoreStartData)
 
       <div className="mt-2">{renderStepContent()}</div>
 
-      {step != 2 && <div className="mt-6">
-        <button
-          type="button"
-          onClick={handleNext}
-          className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition active:scale-[0.98]"
-        >
-          {isLastStep ? "پایان فرایند" : "مرحله بعد"}
-        </button>
-      </div>}
+      {step != 2 && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={handleNext}
+            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition active:scale-[0.98]"
+          >
+            {isLastStep ? "پایان فرایند" : "مرحله بعد"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
