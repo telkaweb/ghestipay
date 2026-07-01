@@ -10,7 +10,6 @@ import Guarantor from "@/app/user/components/ui/Request/Guarantor";
 import PaymentInfo from "@/app/user/components/ui/Request/PaymentInfo";
 import RequestIntro from "@/app/user/components/ui/Request/RequestIntro";
 import RequiredMents from "@/app/user/components/ui/Request/RequiredMents";
-import WaitingPage from "@/app/user/components/ui/Request/WaitingPage";
 import Loading from "@/shared/components/ui/Loading";
 import {
   useGetEvaluateRules,
@@ -37,6 +36,11 @@ export default function ContinueRequestPage() {
   const [step, setStep] = useState(1);
   const [creditScoreStartData, setCreditScoreStartData] = useState(null);
   const [creditScoreResultData, setCreditScoreResultData] = useState(null);
+  const [guarantorResult, setGuarantorResult] = useState({
+    status: "idle",
+    message: "",
+  });
+  const [guarantorClearKey, setGuarantorClearKey] = useState(0);
   const startedCreditScoreTrackingRef = useRef(null);
   const fetchedCreditScoreResultRef = useRef(null);
   const {
@@ -53,7 +57,7 @@ export default function ContinueRequestPage() {
       isPending: isCreditScoreResultPending,
     },
   } = useCredit();
-  const { getPaymentInformation } = useInstallment();
+  const { getPaymentInformation, setGuarantor } = useInstallment();
 
   // Store a copy of request details so child steps and other pages can reuse it.
   const storedOrderDetails = useInstallmentStore((s) => s.orderDetails);
@@ -95,7 +99,9 @@ export default function ContinueRequestPage() {
     orderDetails?.currentStep ||
     null;
   const shouldEvaluateRules =
-    requestStatus === "waiting_rules" || requestStatus === 'waiting_plan_selection';
+    requestStatus === "waiting_rules" ||
+    requestStatus === "waiting_plan_selection" ||
+    requestStatus == "waiting_payment";
   const shouldShowCreditScoreResult =
     fetchedOrderDetails?.current_step === "rules" ||
     requestStatus === "credit_score_result_pending";
@@ -106,12 +112,10 @@ export default function ContinueRequestPage() {
     currentOrderStep === "payment" ||
     requestStatus === "payment";
 
-  const {
-    data: evaluateRulesResponse,
-    isLoading: isEvaluateRulesLoading,
-  } = useGetEvaluateRules(trackingId, {
-    enabled: Boolean(trackingId) && shouldEvaluateRules,
-  });
+  const { data: evaluateRulesResponse, isLoading: isEvaluateRulesLoading } =
+    useGetEvaluateRules(trackingId, {
+      enabled: Boolean(trackingId) && shouldEvaluateRules,
+    });
 
   const evaluateRulesData =
     evaluateRulesResponse?.data?.data || evaluateRulesResponse?.data || null;
@@ -240,6 +244,40 @@ export default function ContinueRequestPage() {
     startCreditScore({ force: true });
   };
 
+  const handleSubmitGuarantor = (guarantor) => {
+    if (!trackingId) return;
+
+    setGuarantor.mutate(
+      {
+        trackingId,
+        guarantor,
+      },
+      {
+        onSuccess: (res) => {
+          const responseData = res?.data?.data || res?.data || null;
+          setGuarantorResult({
+            status: "approved",
+            message:
+              responseData?.message ||
+              res?.data?.message ||
+              "اطلاعات ضامن با موفقیت ثبت شد.",
+          });
+          setGuarantorClearKey((key) => key + 1);
+          refetchOrderDetails();
+        },
+        onError: (error) => {
+          setGuarantorResult({
+            status: "rejected",
+            message:
+              error?.response?.data?.message ||
+              error?.message ||
+              "ثبت اطلاعات ضامن ناموفق بود. لطفا دوباره تلاش کنید.",
+          });
+        },
+      },
+    );
+  };
+
   // Each wizard step receives the same request details and decides what it needs.
   const renderStepContent = () => {
     if (shouldEvaluateRules) {
@@ -321,7 +359,13 @@ export default function ContinueRequestPage() {
         }
       case "rules":
       case "plan":
-        console.log('rules data', shouldEvaluateRules, isEvaluateRulesLoading, evaluateRulesData)
+      case "payment":
+        console.log(
+          "rules data",
+          shouldEvaluateRules,
+          isEvaluateRulesLoading,
+          evaluateRulesData,
+        );
         if (requestStatus == "waiting_credit_score") {
           return (
             <CreditScoreResult
@@ -345,7 +389,7 @@ export default function ContinueRequestPage() {
         if (shouldEvaluateRules && isEvaluateRulesLoading) {
           return <Loading message="در حال بررسی قوانین درخواست..." />;
         }
-      
+
         return (
           <PaymentInfo
             trackingId={trackingId}
@@ -354,6 +398,29 @@ export default function ContinueRequestPage() {
           />
         );
 
+      case "guarantor":
+        // if(requestStatus == 'waiting_guarantor') {
+        //   return (
+        //     <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-center">
+        //       <h2 className="text-base font-bold text-amber-800">
+        //         در انتظار تایید ضامن
+        //       </h2>
+        //       <p className="mt-2 text-sm leading-6 text-amber-700">
+        //         درخواست شما ثبت شده و پس از تایید ضامن، ادامه فرایند فعال می‌شود.
+        //       </p>
+        //     </div>
+        //   );
+        // }
+        return (
+          <Guarantor
+            orderDetails={fetchedOrderDetails}
+            loading={setGuarantor.isPending}
+            clearKey={guarantorClearKey}
+            onSubmit={handleSubmitGuarantor}
+            resultStatus={guarantorResult.status}
+            resultMessage={guarantorResult.message}
+          />
+        );
       // case 3:
       //   return <PaymentInfo orderDetails={orderDetails} showConfirmButton={false} />;
 
@@ -381,7 +448,7 @@ export default function ContinueRequestPage() {
     return <Loading message="در حال دریافت جزئیات درخواست..." />;
   }
 
-  console.log(nextStep)
+  console.log(nextStep);
 
   if (isOrderDetailsError) {
     return (
@@ -414,6 +481,7 @@ export default function ContinueRequestPage() {
       {step != 2 &&
         requestStatus !== "waiting_credit_score" &&
         requestStatus !== "waiting_rules" &&
+        requestStatus !== 'waiting_guarantor' &&
         nextStep !== "plan" && (
           <div className="mt-6">
             <button

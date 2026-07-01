@@ -6,93 +6,72 @@ import {
   CircleAlert,
   CircleCheckBig,
   Clock3,
-  UserRoundCheck,
 } from "lucide-react";
 
 const resultConfig = {
   idle: {
-    title: "در انتظار بررسی ضامن",
-    text: "اطلاعات ضامن را وارد کنید تا نتیجه اعتبارسنجی نمایش داده شود.",
+    title: "آماده ثبت ضامن",
+    text: "اطلاعات ضامن را وارد کنید تا درخواست ثبت شود.",
     className: "border-slate-200 bg-slate-50 text-slate-700",
     icon: Clock3,
   },
   pending: {
-    title: "در حال بررسی",
-    text: "اعتبارسنجی ضامن در حال انجام است.",
+    title: "در حال ثبت ضامن",
+    text: "اطلاعات ضامن در حال ارسال است.",
     className: "border-amber-200 bg-amber-50 text-amber-800",
     icon: Clock3,
   },
   approved: {
-    title: "ضامن مناسب است",
-    text: "بر اساس نتیجه اعتبارسنجی، این ضامن برای ادامه فرایند قابل قبول است.",
+    title: "ضامن ثبت شد",
+    text: "اطلاعات ضامن با موفقیت برای این درخواست ثبت شد.",
     className: "border-emerald-200 bg-emerald-50 text-emerald-800",
     icon: CircleCheckBig,
   },
   rejected: {
-    title: "ضامن مناسب نیست",
-    text: "بر اساس نتیجه اعتبارسنجی، لازم است ضامن دیگری معرفی کنید.",
+    title: "ثبت ضامن ناموفق بود",
+    text: "اطلاعات ضامن ثبت نشد. لطفا دوباره تلاش کنید.",
     className: "border-red-200 bg-red-50 text-red-800",
     icon: CircleAlert,
   },
 };
 
-function normalizeBirthDate(value) {
-  return value.replace(/\D/g, "");
-}
-
-function validate(values) {
-  if (!/^09\d{9}$/.test(values.phone)) {
-    return "شماره تلفن ضامن معتبر نیست.";
-  }
-
-  if (!/^\d{10}$/.test(values.nationalCode)) {
-    return "شماره ملی ضامن باید ۱۰ رقم باشد.";
-  }
-
-  if (!/^\d{8}$/.test(normalizeBirthDate(values.birthDate))) {
-    return "تاریخ تولد ضامن باید ۸ رقم باشد. مثال: 13700101";
-  }
-
-  return "";
-}
-
 export default function Guarantor({
   defaultValues = {},
-  resultStatus = "rejected",
+  resultStatus = "idle",
   resultMessage = "",
   loading = false,
   onSubmit,
 }) {
   const [values, setValues] = useState({
-    phone: defaultValues.phone || "",
-    nationalCode: defaultValues.nationalCode || "",
-    birthDate: defaultValues.birthDate || "",
+    mobile: defaultValues.mobile || defaultValues.phone || "",
+    nationalCode: defaultValues.national_code || defaultValues.nationalCode || "",
   });
-  const [error, setError] = useState("");
 
   const effectiveStatus = loading ? "pending" : resultStatus;
   const config = resultConfig[effectiveStatus] || resultConfig.idle;
   const ResultIcon = config.icon;
 
+  const resetValues = () => {
+    setValues({
+      mobile: "",
+      nationalCode: "",
+    });
+  };
+
   const handleChange = (field) => (event) => {
     setValues((prev) => ({ ...prev, [field]: event.target.value }));
-    setError("");
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const validationError = validate(values);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    onSubmit?.({
-      phone: values.phone.trim(),
-      national_code: values.nationalCode.trim(),
-      birth_date: normalizeBirthDate(values.birthDate),
-    });
+    onSubmit?.(
+      {
+        mobile: values.mobile.trim(),
+        national_code: values.nationalCode.trim(),
+      },
+      resetValues,
+    );
   };
 
   return (
@@ -102,8 +81,7 @@ export default function Guarantor({
           اطلاعات ضامن
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-500">
-          اطلاعات هویتی ضامن را وارد کنید تا نتیجه اعتبارسنجی او مشخص شود و
-          سیستم اعلام کند آیا این ضامن برای ادامه فرایند مناسب است یا خیر.
+          شماره موبایل و کد ملی ضامن را وارد کنید تا برای این درخواست ثبت شود.
         </p>
       </div>
 
@@ -113,8 +91,8 @@ export default function Guarantor({
             label="شماره تلفن ضامن"
             type="tel"
             placeholder="09xxxxxxxxx"
-            value={values.phone}
-            onChange={handleChange("phone")}
+            value={values.mobile}
+            onChange={handleChange("mobile")}
           />
 
           <Field
@@ -124,21 +102,7 @@ export default function Guarantor({
             value={values.nationalCode}
             onChange={handleChange("nationalCode")}
           />
-
-          <Field
-            label="تاریخ تولد ضامن"
-            inputMode="numeric"
-            placeholder="13700101"
-            value={values.birthDate}
-            onChange={handleChange("birthDate")}
-          />
         </div>
-
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
 
         <button
           type="submit"
@@ -146,7 +110,7 @@ export default function Guarantor({
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <BadgeCheck size={18} />
-          {loading ? "در حال اعتبارسنجی..." : "اعتبارسنجی ضامن"}
+          {loading ? "در حال ثبت اطلاعات" : "ثبت ضامن"}
         </button>
       </form>
 
@@ -163,14 +127,6 @@ export default function Guarantor({
             </p>
           </div>
         </div>
-      </div>
-
-      <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-blue-800">
-        <UserRoundCheck className="mt-0.5 shrink-0" size={20} />
-        <p className="text-xs leading-6">
-          ضامن باید اعتبارسنجی و ثبت امضای دیجیتال را تکمیل کند و چک صیادی
-          معتبر داشته باشد.
-        </p>
       </div>
     </div>
   );

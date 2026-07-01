@@ -37,9 +37,10 @@ export function useInstallment() {
   });
 
   const getPaymentInformation = useMutation({
-    mutationKey: ['Payment'],
-    mutationFn: ({trackingId, planId}) => installmentService.getPaymentInformation({trackingId, planId})
-  })
+    mutationKey: ["Payment"],
+    mutationFn: ({ trackingId, planId }) =>
+      installmentService.getPaymentInformation({ trackingId, planId }),
+  });
 
   const removePaymentPlan = useMutation({
     mutationFn: (data) => installmentService.removePaymentPlan(data),
@@ -52,25 +53,93 @@ export function useInstallment() {
     },
   });
 
-  const getOrderList = (options) =>
-    useQuery({
-      queryKey: ["getOrderList"],
-      queryFn: () => installmentService.getOrderList(options),
-    });
+  const setGuarantor = useMutation({
+    mutationFn: ({ trackingId, guarantor }) =>
+      installmentService.setGuarantor({ trackingId, guarantor }),
+    onSuccess: (_data, variables) => {
+      if (!variables?.trackingId) return;
+
+      queryClient.invalidateQueries({
+        queryKey: ["getOrderProgressDetails", variables.trackingId],
+      });
+    },
+  });
+
+  const rejectGuaranteeRequest = useMutation({
+    mutationFn: ({ requestId }) =>
+      installmentService.rejectGuaranteeRequest(requestId),
+    onSuccess: (_data, variables) => {
+      if (!variables?.requestId) return;
+
+      queryClient.invalidateQueries({
+        queryKey: ["getGuaranteeRequest"],
+      });
+    },
+  });
+
+  const acceptGuaranteeRequest = useMutation({
+    mutationFn: ({ requestId }) =>
+      installmentService.acceptGuaranteeRequest(requestId),
+    onSuccess: (_data, variables) => {
+      if (!variables?.requestId) return;
+
+      queryClient.invalidateQueries({
+        queryKey: ["getGuaranteeRequest"],
+      });
+    },
+  });
+
+  const getVerifyCodeForGuarantorCreditScore = useMutation({
+    mutationFn: ({ requestId }) =>
+      installmentService.getVerifyCodeForGuarantorCreditScore(requestId),
+  });
+
+  const verifyGuarantorCreditScore = useMutation({
+    mutationFn: ({ requestId, code }) =>
+      installmentService.verifyGuarantorCreditScore({ requestId, code }),
+  });
+
+  const ResendVerifyCodeForGuarantorCreditScore = useMutation({
+    mutationFn: ({ requestId }) =>
+      installmentService.resendVerifyCodeForGuarantorCreditScore(requestId),
+  });
 
   return {
     storeOrder,
-    getOrderList,
     setPaymentPlan,
     removePaymentPlan,
-    getPaymentInformation
+    getPaymentInformation,
+    setGuarantor,
+    rejectGuaranteeRequest,
+    acceptGuaranteeRequest,
+    getVerifyCodeForGuarantorCreditScore,
+    verifyGuarantorCreditScore,
+    ResendVerifyCodeForGuarantorCreditScore,
   };
 }
 
-export function useGetOrderList(options) {
+export function useGetGuarantorScoreResult(requestId, options = {}) {
+  return useQuery({
+    queryKey: ["getGuarantorScoreResult", requestId],
+    queryFn: () => installmentService.getGuarantorScoreResult(requestId),
+    enabled: Boolean(requestId),
+    ...options,
+  });
+}
+
+export function useGetOrderList(options, queryOptions = {}) {
   return useQuery({
     queryKey: ["getOrderList", options],
     queryFn: () => installmentService.getOrderList(options),
+    ...queryOptions,
+  });
+}
+
+export function useGetGuaranteeRequest(options, queryOptions = {}) {
+  return useQuery({
+    queryKey: ["getGuaranteeRequest", options],
+    queryFn: () => installmentService.getGuaranteeRequests(options),
+    ...queryOptions,
   });
 }
 
