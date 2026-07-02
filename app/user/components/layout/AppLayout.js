@@ -12,6 +12,7 @@ export default function AppLayout({ children }) {
       <div className="w-full max-w-md bg-white min-h-screen flex flex-col relative overflow-hidden shadow-lg">
         <SafeArea>
           <AppHeader />
+          <div className="h-16 shrink-0" aria-hidden="true" />
 
           {/* محتوا */}
           <PageContainer>{children}</PageContainer>

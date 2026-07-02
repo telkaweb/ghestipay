@@ -23,69 +23,112 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-0 px-3">
-      
+    <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-3">
       <nav className="w-full max-w-md">
-        
-        <div className="
-          grid grid-cols-5
-          items-end
-          bg-white/80 backdrop-blur-xl
-          border border-gray-200/60
-          rounded-2xl
-          shadow-lg
-          h-16
-          px-2
-        ">
+        <div
+          className="
+            relative h-[78px] rounded-[30px]
+            border border-white/50
+            bg-white/55
+            px-2
+            shadow-[0_18px_45px_rgba(15,23,42,0.12)]
+            backdrop-blur-2xl
+            before:pointer-events-none before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-white/70
+            after:pointer-events-none after:absolute after:inset-0 after:rounded-[30px] after:ring-1 after:ring-black/[0.03]
+          "
+        >
+          {/* ambient glow */}
+          <div className="pointer-events-none absolute inset-x-10 top-0 h-14 rounded-full bg-gradient-to-r from-sky-500/8 via-blue-500/6 to-cyan-400/8 blur-2xl" />
 
-          {items.map((item, index) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
+          <div className="relative grid h-full grid-cols-5 items-end">
+            {items.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-            if (item.center) {
+              if (item.center) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex flex-col items-center justify-center -translate-y-5"
+                  >
+                    <div
+                      className={`
+                        relative flex h-14 w-14 items-center justify-center rounded-full
+                        transition-all duration-200 active:scale-95
+                        ${
+                          isActive
+                            ? `
+                              border border-sky-500/20
+                              bg-zinc-950 text-white
+                              shadow-[0_14px_35px_rgba(15,23,42,0.28)]
+                              ring-4 ring-white/65
+                            `
+                            : `
+                              border border-white/70
+                              bg-white/65 text-zinc-700
+                              shadow-[0_10px_30px_rgba(15,23,42,0.10)]
+                              ring-4 ring-white/50
+                              backdrop-blur-xl
+                            `
+                        }
+                      `}
+                    >
+                      <div
+                        className={`
+                          pointer-events-none absolute inset-0 rounded-full
+                          ${
+                            isActive
+                              ? "bg-gradient-to-br from-sky-400/18 via-transparent to-cyan-300/14"
+                              : "bg-gradient-to-br from-white/40 via-transparent to-sky-100/30"
+                          }
+                        `}
+                      />
+
+                      <Icon size={22} className="relative z-[1]" />
+                    </div>
+
+                    <span
+                      className={`
+                        mt-2.5 text-[10px] font-medium transition-colors
+                        ${isActive ? "text-zinc-900" : "text-zinc-500"}
+                      `}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              }
+
               return (
                 <Link
-                  key={index}
+                  key={item.href}
                   href={item.href}
-                  className="flex flex-col items-center justify-center -translate-y-5"
+                  className="flex flex-col items-center justify-center gap-1 -translate-y-3"
                 >
                   <div
                     className={`
-                      w-14 h-14 rounded-full flex items-center justify-center
-                      shadow-md transition active:scale-95
-                      ${
-                        isActive
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-blue-600 border border-gray-200"
-                      }
+                      flex h-10 items-center justify-center
+                      transition-colors duration-200
+                      ${isActive ? "text-amber-600" : "text-zinc-500"}
                     `}
                   >
-                    <Icon size={22} />
+                    <Icon size={19} />
                   </div>
 
-                  <span className="text-[10px] mt-1 text-gray-600">
+                  <span
+                    className={`
+                      text-[10px] font-medium transition-colors
+                      ${isActive ? "text-amber-600" : "text-zinc-500"}
+                    `}
+                  >
                     {item.label}
                   </span>
                 </Link>
               );
-            }
-
-            return (
-              <Link
-                key={index}
-                href={item.href}
-                className={`
-                  flex flex-col items-center justify-center gap-1 -translate-y-4
-                  text-[11px] transition
-                  ${isActive ? "text-blue-600" : "text-gray-500"}
-                `}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-
+            })}
+          </div>
         </div>
       </nav>
     </div>
